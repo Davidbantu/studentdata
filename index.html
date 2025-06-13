@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Manager</title>
+  <style>
+    body {
+      background-color: white;
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      color: #333;
+    }
+
+    h2 {
+      color: #0056b3;
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 200px;
+    }
+
+    button {
+      padding: 8px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .action-btn {
+      background-color: #dc3545;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 3px;
+      margin-right: 5px;
+    }
+
+    .edit-btn {
+      background-color: #28a745;
+    }
+
+    .action-btn:hover {
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <h2>Student Manager</h2>
+  <div class="form-section">
+    <input id="name" placeholder="Name" />
+    <input id="age" placeholder="Age" />
+    <input id="email" placeholder="Email" />
+    <input type="hidden" id="originalName" />
+    <button id="submitBtn" onclick="addStudent()">Add</button>
+  </div>
+
+  <table id="studentTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbx2dx5uLX3z_oayxhAyn8bfymYxJKu-Q48KBaVBMYPAIPX2QbsyEjgfolUqRrmmRz_O/exec';
+
+    async function addStudent() {
+      const name = document.getElementById('name').value;
+      const age = document.getElementById('age').value;
+      const email = document.getElementById('email').value;
+
+      if (!name || !age || !email) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      await fetch(SHEET_URL, {
+        method: 'POST',
+        body: JSON.stringify({ name, age, email }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      clearForm();
+      loadStudents();
+    }
+
+    async function deleteStudent(name) {
+      if (!confirm(`Are you sure you want to delete ${name}?`)) return;
+
+      await fetch(SHEET_URL, {
+        method: 'DELETE',
+        body: JSON.stringify({ name }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      loadStudents();
+    }
+
+    function editStudent(name, age, email) {
+      document.getElementById('name').value = name;
+      document.getElementById('age').value = age;
+      document.getElementById('email').value = email;
+      document.getElementById('originalName').value = name;
+
+      const btn = document.getElementById('submitBtn');
+      btn.innerText = "Update";
+      btn.onclick = updateStudent;
+    }
+
+    async function updateStudent() {
+      const name = document.getElementById('name').value;
+      const age = document.getElementById('age').value;
+      const email = document.getElementById('email').value;
+      const originalName = document.getElementById('originalName').value;
+
+      await fetch(SHEET_URL, {
+        method: 'PUT',
+        body: JSON.stringify({ originalName, name, age, email }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      clearForm();
+      loadStudents();
+    }
+
+    function clearForm() {
+      document.getElementById('name').value = '';
+      document.getElementById('age').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('originalName').value = '';
+      const btn = document.getElementById('submitBtn');
+      btn.innerText = "Add";
+      btn.onclick = addStudent;
+    }
+
+    async function loadStudents() {
+      const res = await fetch(SHEET_URL);
+      const data = await res.json();
+
+      const tbody = document.querySelector("#studentTable tbody");
+      tbody.innerHTML = '';
+
+      data.slice(1).forEach(row => {
+        const [name, age, email] = row;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${name}</td>
+          <td>${age}</td>
+          <td>${email}</td>
+          <td>
+            <button class="action-btn edit-btn" onclick="editStudent('${name}', '${age}', '${email}')">Edit</button>
+            <button class="action-btn" onclick="deleteStudent('${name}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.onload = loadStudents;
+  </script>
+</body>
+</html>
