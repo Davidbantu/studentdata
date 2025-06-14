@@ -1,5 +1,5 @@
 // Replace this with your deployed Google Apps Script URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_7xxxOpgXZCgTYJUbEJhDRwBxg_qgtQ6bURh-r-u7wysi8FqT76c8blmMkiplZx_V/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9UpHCxoS0BEhllVz5s8EbADeD8K6oSuOvyKP4KhopBAg85OjKgzBcWqgMMs2Q62wI/exec';
 
 const form = document.getElementById('student-form');
 const nameInput = document.getElementById('student-name');
