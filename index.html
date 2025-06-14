@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Student Manager</title>
+  <meta charset="UTF-8" />
+  <title>Student Details</title>
   <style>
     body {
-      background-color: white;
       font-family: Arial, sans-serif;
-      margin: 40px;
-      color: #333;
+      background: #fff;
+      margin: 20px;
     }
 
-    h2 {
-      color: #0056b3;
+    h1 {
+      color: #004AAD;
     }
 
-    .form-section {
-      margin-bottom: 30px;
+    form {
+      margin-bottom: 20px;
     }
 
     input {
@@ -24,70 +23,57 @@
       margin: 5px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      width: 200px;
     }
 
     button {
-      padding: 8px 15px;
-      background-color: #007bff;
-      color: white;
+      padding: 8px 12px;
+      margin: 5px;
+      background-color: #004AAD;
+      color: #fff;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      margin-top: 5px;
     }
 
     button:hover {
-      background-color: #0056b3;
+      background-color: #00307F;
     }
 
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      width: 100%;
+      background: #f9f9f9;
     }
 
     th, td {
-      padding: 12px;
-      text-align: left;
-      border: 1px solid #ccc;
+      padding: 10px;
+      border: 1px solid #ddd;
     }
 
     th {
-      background-color: #007bff;
+      background-color: #004AAD;
       color: white;
     }
 
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
+    td button {
+      background-color: #E60026;
     }
 
-    .action-btn {
-      background-color: #dc3545;
-      padding: 6px 10px;
-      font-size: 12px;
-      border-radius: 3px;
-      margin-right: 5px;
-    }
-
-    .edit-btn {
-      background-color: #28a745;
-    }
-
-    .action-btn:hover {
-      opacity: 0.85;
+    td button.edit-btn {
+      background-color: #007BFF;
     }
   </style>
 </head>
 <body>
-  <h2>Student Manager</h2>
-  <div class="form-section">
-    <input id="name" placeholder="Name" />
-    <input id="age" placeholder="Age" />
-    <input id="email" placeholder="Email" />
-    <input type="hidden" id="originalName" />
-    <button id="submitBtn" onclick="addStudent()">Add</button>
-  </div>
+  <h1>Student Form</h1>
+
+  <form id="studentForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="number" id="age" placeholder="Age" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <button type="submit">Add</button>
+    <button type="button" id="updateBtn" style="display: none;">Update</button>
+  </form>
 
   <table id="studentTable">
     <thead>
@@ -102,101 +88,82 @@
   </table>
 
   <script>
-    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbx2dx5uLX3z_oayxhAyn8bfymYxJKu-Q48KBaVBMYPAIPX2QbsyEjgfolUqRrmmRz_O/exec';
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbx2dx5uLX3z_oayxhAyn8bfymYxJKu-Q48KBaVBMYPAIPX2QbsyEjgfolUqRrmmRz_O/exec'; // Replace this!
 
-    async function addStudent() {
-      const name = document.getElementById('name').value;
-      const age = document.getElementById('age').value;
-      const email = document.getElementById('email').value;
+    let originalName = '';
 
-      if (!name || !age || !email) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      await fetch(SHEET_URL, {
-        method: 'POST',
-        body: JSON.stringify({ name, age, email }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      clearForm();
-      loadStudents();
-    }
-
-    async function deleteStudent(name) {
-      if (!confirm(`Are you sure you want to delete ${name}?`)) return;
-
-      await fetch(SHEET_URL, {
-        method: 'DELETE',
-        body: JSON.stringify({ name }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      loadStudents();
-    }
-
-    function editStudent(name, age, email) {
-      document.getElementById('name').value = name;
-      document.getElementById('age').value = age;
-      document.getElementById('email').value = email;
-      document.getElementById('originalName').value = name;
-
-      const btn = document.getElementById('submitBtn');
-      btn.innerText = "Update";
-      btn.onclick = updateStudent;
-    }
-
-    async function updateStudent() {
-      const name = document.getElementById('name').value;
-      const age = document.getElementById('age').value;
-      const email = document.getElementById('email').value;
-      const originalName = document.getElementById('originalName').value;
-
-      await fetch(SHEET_URL, {
-        method: 'PUT',
-        body: JSON.stringify({ originalName, name, age, email }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      clearForm();
-      loadStudents();
-    }
-
-    function clearForm() {
-      document.getElementById('name').value = '';
-      document.getElementById('age').value = '';
-      document.getElementById('email').value = '';
-      document.getElementById('originalName').value = '';
-      const btn = document.getElementById('submitBtn');
-      btn.innerText = "Add";
-      btn.onclick = addStudent;
-    }
-
-    async function loadStudents() {
+    async function fetchData() {
       const res = await fetch(SHEET_URL);
       const data = await res.json();
-
-      const tbody = document.querySelector("#studentTable tbody");
+      const tbody = document.querySelector('#studentTable tbody');
       tbody.innerHTML = '';
 
-      data.slice(1).forEach(row => {
-        const [name, age, email] = row;
+      data.slice(1).forEach((row) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${name}</td>
-          <td>${age}</td>
-          <td>${email}</td>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
           <td>
-            <button class="action-btn edit-btn" onclick="editStudent('${name}', '${age}', '${email}')">Edit</button>
-            <button class="action-btn" onclick="deleteStudent('${name}')">Delete</button>
+            <button class="edit-btn" onclick="editRow('${row[0]}', '${row[1]}', '${row[2]}')">Edit</button>
+            <button onclick="deleteRow('${row[0]}')">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    window.onload = loadStudents;
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      const res = await fetch(SHEET_URL, {
+        method: 'POST',
+        body: JSON.stringify({ name, age, email })
+      });
+
+      document.getElementById('studentForm').reset();
+      fetchData();
+    });
+
+    function editRow(name, age, email) {
+      document.getElementById('name').value = name;
+      document.getElementById('age').value = age;
+      document.getElementById('email').value = email;
+      document.querySelector('form button[type="submit"]').style.display = 'none';
+      document.getElementById('updateBtn').style.display = 'inline-block';
+      originalName = name;
+    }
+
+    document.getElementById('updateBtn').addEventListener('click', async () => {
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      await fetch(SHEET_URL, {
+        method: 'PUT',
+        body: JSON.stringify({ originalName, name, age, email })
+      });
+
+      document.getElementById('studentForm').reset();
+      document.querySelector('form button[type="submit"]').style.display = 'inline-block';
+      document.getElementById('updateBtn').style.display = 'none';
+      fetchData();
+    });
+
+    async function deleteRow(name) {
+      if (confirm(`Delete ${name}?`)) {
+        await fetch(SHEET_URL, {
+          method: 'DELETE',
+          body: JSON.stringify({ name })
+        });
+        fetchData();
+      }
+    }
+
+    fetchData();
   </script>
 </body>
 </html>
