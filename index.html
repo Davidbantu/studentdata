@@ -1,169 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Student Details</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff;
-      margin: 20px;
-    }
-
-    h1 {
-      color: #004AAD;
-    }
-
-    form {
-      margin-bottom: 20px;
-    }
-
-    input {
-      padding: 8px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button {
-      padding: 8px 12px;
-      margin: 5px;
-      background-color: #004AAD;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #00307F;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: #f9f9f9;
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #004AAD;
-      color: white;
-    }
-
-    td button {
-      background-color: #E60026;
-    }
-
-    td button.edit-btn {
-      background-color: #007BFF;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Student Data Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Student Form</h1>
-
-  <form id="studentForm">
-    <input type="text" id="name" placeholder="Name" required />
-    <input type="number" id="age" placeholder="Age" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <button type="submit">Add</button>
-    <button type="button" id="updateBtn" style="display: none;">Update</button>
-  </form>
-
-  <table id="studentTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Age</th>
-        <th>Email</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <script>
-    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw9q4PGFLc0EP2OkugOJShEmCvNCCybJwG-07RMJheuj89Oy2Ozkx0kQVUe0I38q8z8/exec'; // Replace this!
-
-    let originalName = '';
-
-    async function fetchData() {
-      const res = await fetch(SHEET_URL);
-      const data = await res.json();
-      const tbody = document.querySelector('#studentTable tbody');
-      tbody.innerHTML = '';
-
-      data.slice(1).forEach((row) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${row[0]}</td>
-          <td>${row[1]}</td>
-          <td>${row[2]}</td>
-          <td>
-            <button class="edit-btn" onclick="editRow('${row[0]}', '${row[1]}', '${row[2]}')">Edit</button>
-            <button onclick="deleteRow('${row[0]}')">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    document.getElementById('studentForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const age = document.getElementById('age').value.trim();
-      const email = document.getElementById('email').value.trim();
-
-      const res = await fetch(SHEET_URL, {
-        method: 'POST',
-        body: JSON.stringify({ name, age, email })
-      });
-
-      document.getElementById('studentForm').reset();
-      fetchData();
-    });
-
-    function editRow(name, age, email) {
-      document.getElementById('name').value = name;
-      document.getElementById('age').value = age;
-      document.getElementById('email').value = email;
-      document.querySelector('form button[type="submit"]').style.display = 'none';
-      document.getElementById('updateBtn').style.display = 'inline-block';
-      originalName = name;
-    }
-
-    document.getElementById('updateBtn').addEventListener('click', async () => {
-      const name = document.getElementById('name').value.trim();
-      const age = document.getElementById('age').value.trim();
-      const email = document.getElementById('email').value.trim();
-
-      await fetch(SHEET_URL, {
-        method: 'PUT',
-        body: JSON.stringify({ originalName, name, age, email })
-      });
-
-      document.getElementById('studentForm').reset();
-      document.querySelector('form button[type="submit"]').style.display = 'inline-block';
-      document.getElementById('updateBtn').style.display = 'none';
-      fetchData();
-    });
-
-    async function deleteRow(name) {
-      if (confirm(`Delete ${name}?`)) {
-        await fetch(SHEET_URL, {
-          method: 'DELETE',
-          body: JSON.stringify({ name })
-        });
-        fetchData();
-      }
-    }
-
-    fetchData();
-  </script>
+  <div class="container">
+    <h1>Student Data Manager</h1>
+    <form id="student-form">
+      <input type="hidden" id="student-id">
+      <input type="text" id="student-name" placeholder="Student Name" required>
+      <input type="text" id="student-details" placeholder="Details" required>
+      <button type="submit" id="submit-btn">Add Student</button>
+      <button type="button" id="cancel-btn" style="display:none;">Cancel</button>
+    </form>
+    <table id="students-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Details</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Students data will appear here -->
+      </tbody>
+    </table>
+    <p id="sheet-link" style="margin-top:2em;">
+      <b>Data is synced with your <a href="#" id="gsheet-url" target="_blank">Google Sheet</a></b>
+    </p>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
