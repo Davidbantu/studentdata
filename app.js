@@ -1,5 +1,4 @@
-// Replace this with your deployed Google Apps Script URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9UpHCxoS0BEhllVz5s8EbADeD8K6oSuOvyKP4KhopBAg85OjKgzBcWqgMMs2Q62wI/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHF_p1IpQ1iZunu94plX4HPjpWTQ81SPN37RTjf-5s0bgLhi01KWZKL6zMBoZAsrO1/exec';
 
 const form = document.getElementById('student-form');
 const nameInput = document.getElementById('student-name');
@@ -41,7 +40,6 @@ function renderStudents(students) {
   });
 }
 
-// Expose for inline HTML handlers
 window.editStudent = (id, name, details) => {
   nameInput.value = name;
   detailsInput.value = details;
